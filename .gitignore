@@ -1,0 +1,25 @@
+# secrets — never commit (and never send to cloud models)
+.env
+.env.*
+*.pem
+*.key
+*credential*
+*secret*
+
+# dependencies / build
+node_modules/
+dist/
+build/
+bin/
+obj/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
