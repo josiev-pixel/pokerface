@@ -10,6 +10,7 @@ work session (e.g. `..\orchestrate.ps1 -Project pokerface` or
 - `src/` — game code
 - `assets/` — cards, sprites, sounds
 - `tests/` — unit/integration tests
+- `docs/` — [architecture writeup](docs/ARCHITECTURE.md) + [decision records](docs/adr/)
 
 ## Workflow
 This project inherits the workspace's local-first workflow (`..\AGENTS.md`):
