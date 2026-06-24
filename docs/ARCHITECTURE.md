@@ -36,12 +36,24 @@ baseline strategy via blueprint / re-solve (`Solver`) → opponent range + confi
 (`Profiling`) → bounded exploit blend (`Decision`) → **action + EV/equity/range/why**.
 Same `(state, opponentModel, seed)` ⇒ same result. Full pipeline in DECISION_ALGORITHM §1.
 
+## Status (what's built)
+`Core` (cards/deck/PRNG, hand evaluator, equity, 169-hand abstraction, betting/state engine
+with side pots), `Solver` (CFR+ validated on Kuhn), `Decision` (heads-up v1: SAGE/Chen preflop,
+equity-vs-pot-odds postflop, bounded exploitation), and `Cli` (decide/equity/kuhn/demo) are
+implemented and tested. `Abstraction` and `Profiling` are still planned (the `Decision` layer
+uses equity-vs-random and an `OpponentModel` stub until they land). The `Table` Raylib tool is a
+dev scenario viewer. Build/test instructions: [`DEVELOPMENT.md`](DEVELOPMENT.md).
+
 ## Key decisions
 - **ADR-0001** — Record architecture decisions.
 - **ADR-0002** — Stack: C#/.NET 10 + Raylib (`Raylib-cs`) + xUnit.
 - **ADR-0003** — Engine architecture & decision approach (exact core / CFR baseline /
   bounded exploitation / heads-up first / determinism lean).
 - **ADR-0004** — Raylib front end is a scoped dev/scenario tool, not a product.
+- **ADR-0005** — Testing under Windows Smart App Control (xUnit v3, sources compiled into the
+  test assembly; run via `./test.ps1`, not `dotnet test`).
+- **ADR-0006** — "Deterministic" means no AI/ML in the decision path *and* seed-reproducible,
+  but mixed (pseudorandom) strategies are expected and embraced.
 
 ## Risks & open questions
 - **Multiway has no guaranteed solution** — we approximate and label it (THEORY §5).

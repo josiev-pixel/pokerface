@@ -4,6 +4,7 @@
     <Project Path="src/PokerEngine.Decision/PokerEngine.Decision.csproj" />
     <Project Path="src/PokerEngine.Solver/PokerEngine.Solver.csproj" />
     <Project Path="src/PokerEngine.Cli/PokerEngine.Cli.csproj" />
+    <Project Path="src/PokerEngine.Table/PokerEngine.Table.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PokerEngine.Tests/PokerEngine.Tests.csproj" />

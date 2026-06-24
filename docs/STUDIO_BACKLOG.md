@@ -20,35 +20,36 @@ checkpoint on the current branch. The Director can reorder anytime (even from th
 - Front end: the Raylib `Table` is a **dev/scenario tool only** (ADR-0004) — no product UI.
 
 ## Now  (research the theory, then stand up the exact core — heads-up first)
-- [ ] **Research pass on poker GTO** (Lead-led; delegate reading/summaries to Qwen). Survey
-  CFR / CFR+ / MCCFR / Discounted-CFR, card + action abstraction, subgame/continual
-  re-solving, exploitability (mbb/g), and the milestone agents (Cepheus, Libratus,
-  DeepStack, Pluribus), plus ICM. **Deepen `POKER_THEORY.md` and `DECISION_ALGORITHM.md`
-  with citations and concrete parameter choices.** Capture open frontiers (DECISION §8).
-- [ ] **Scaffold the solution** (`PokerEngine.slnx`): `Core` + `Tests` first; stubs for
-  `Abstraction`/`Solver`/`Profiling`/`Decision`/`Cli`. (Card/Suit/Rank/Deck + seeded PRNG
-  may already exist — verify and build on them.)
-- [ ] **Hand evaluator** (`Core.Eval`): correct 5–7 card ranking; exhaustive tests (all
-  hand classes, best-of-7). Optimize to a lookup evaluator only once profiled hot.
-- [ ] **Game state + betting engine** (`Core`): 2–9 players, blinds/antes, button, streets,
-  legal actions, **pot + side pots** (all-in math), showdown. Property/edge-case tests.
-- [ ] **Equity / EV** (`Core.Equity`): exact enumeration where small, seeded Monte-Carlo
-  where large; range-vs-range with card-removal. Reproducibility test (same seed ⇒ same).
+- [x] **Research pass on poker GTO.** Surveyed CFR/CFR+/Kuhn, SAGE & Nash push/fold, Chen,
+  exploitability (mbb/g) + Cepheus, MDF/alpha; deepened `POKER_THEORY.md` (§7) and
+  `DECISION_ALGORITHM.md` (§0, §9, §11 with citations and concrete parameters).
+- [x] **Scaffold the solution** (`PokerEngine.slnx`): `Core`, `Decision`, `Solver`, `Cli`,
+  `Table`, `Tests`. (Card/Suit/Rank/Deck + seeded PRNG existed; built on them.) Test loop
+  works around Smart App Control (ADR-0005, `./test.ps1`).
+- [x] **Hand evaluator** (`Core.Eval.HandEvaluator`): 5–7 card ranking; verified by the full
+  2,598,960-hand census against known category counts.
+- [x] **Game state + betting engine** (`Core.Game`): 2–9 players, blinds/antes, button,
+  streets, legal actions, min-raise/short-all-in reopening, **pot + side pots**, showdown.
+- [x] **Equity / EV** (`Core.Equity.EquityCalculator`): exact enumeration where small, seeded
+  Monte-Carlo where large; vs-specific and vs-random; reproducible by seed.
+  *(range-vs-range with card-removal still TODO — see Profiling.)*
 
 ## Next  (the decision engine — heads-up)
 - [ ] **Abstraction** (`Abstraction`): coarse card buckets + a small bet-size set +
   translation. Document the error as the named approximation seam.
-- [ ] **CFR+ solver** (`Solver`) on a tiny heads-up game (e.g. a toy/Kuhn/Leduc first to
-  validate convergence), then heads-up Hold'em on the abstraction. **Measure exploitability.**
+- [~] **CFR+ solver** (`Solver.CfrPlusSolver`): **done & validated on Kuhn** (converges to the
+  α-family, value −1/18, exploitability < 0.001 chips/hand). Still TODO: Leduc, then heads-up
+  Hold'em on the abstraction, and measuring exploitability there.
 - [ ] **Subgame re-solving** (safe; budget-bounded) to sharpen live decisions.
-- [ ] **Profiling** (`Profiling`): opponent stats at hand/recent/lifetime horizons; Bayesian
-  range estimate; read-confidence `c`.
-- [ ] **Decision policy** (`Decision`): GTO baseline + bounded exploit blend (`w=f(c)`,
-  capped `w_max`); emits action + EV/equity/range/why. Tests: `w→0` ⇒ GTO; beats a scripted
-  leaky opponent for more than GTO; never exceeds the cap.
-- [ ] **Raylib scenario `Table`** (ADR-0004): poker table, 52-card palette (4 suit rows),
-  drag cards to holes/board, edit stacks/bets/pot/blinds/button/action, show the engine's
-  recommendation + reasoning. Tests never reference this project.
+- [~] **Profiling** (`Profiling`): opponent stats at hand/recent/lifetime horizons; Bayesian
+  range estimate; read-confidence `c`. *(Only the `Decision.OpponentModel` stub + read
+  confidence exists today; the real three-horizon profiler is TODO.)*
+- [x] **Decision policy** (`Decision.DecisionEngine`, heads-up v1): baseline (SAGE/Chen preflop,
+  equity-vs-pot-odds postflop with seeded mixing) + bounded exploit blend (`w=f(c)`, capped
+  `w_max`); emits action + EV/equity/strategy/why. Tested: `w→0` ⇒ baseline, over-folder gets
+  bluffed more, cap respected. *(Baseline is heuristic, not yet a CFR solve — DECISION §0.)*
+- [~] **Raylib scenario `Table`** (ADR-0004): v1 is a scenario **viewer** (felt table, drawn
+  cards, engine readout, cycle/re-seed). Drag-and-drop card palette + editable stacks/bets TODO.
 
 ## Later  (multiway + frontiers)
 - [ ] Generalize the layers to **multiway (3–9)** via MCCFR self-play blueprint +

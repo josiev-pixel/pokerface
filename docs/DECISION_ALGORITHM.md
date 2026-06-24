@@ -7,17 +7,26 @@
 > basis: [ADR-0003](adr/0003-engine-architecture-and-decision-approach.md).
 
 ## 0. Module map (problem → where it's handled)
-| Concern | Module *(C# project)* | Exactness |
+*(built)* = lives in code today; *(planned)* = not yet. Keep this honest as modules land.
+
+| Concern | Type *(C# project)* | Exactness |
 |---|---|---|
-| Rules, state, legal actions, pots/side-pots, showdown | `PokerEngine.Core` *(planned)* | **Exact** |
-| Hand evaluation (5–7 cards) | `PokerEngine.Core.Eval` *(planned)* | **Exact** |
-| Equity / EV (enumeration or seeded Monte-Carlo) | `PokerEngine.Core.Equity` *(planned)* | Exact / seeded-approx |
+| Rules, state, legal actions, pots/side-pots, showdown | `Game.GameState` + `Game.PotResolver` *(built, Core)* | **Exact** |
+| Hand evaluation (5–7 cards) | `Eval.HandEvaluator` *(built, Core)* | **Exact** |
+| Equity / EV (enumeration or seeded Monte-Carlo) | `Equity.EquityCalculator` *(built, Core)* | Exact / seeded-approx |
+| Preflop hand abstraction (the 169 buckets) | `StartingHand`, `HoleCards` *(built, Core)* | **Exact** |
 | Card + action abstraction, translation | `PokerEngine.Abstraction` *(planned)* | **Approximate** (named seam) |
-| CFR solving → blueprint; subgame re-solve | `PokerEngine.Solver` *(planned)* | Reproducible-approx |
-| Opponent stats, range estimation, leak detection | `PokerEngine.Profiling` *(planned)* | Estimate |
-| GTO baseline + bounded exploit → action | `PokerEngine.Decision` *(planned)* | Policy |
-| Solve/benchmark/exploitability/scenarios | `PokerEngine.Cli` *(planned)* | — |
-| Scenario drag-and-drop table | `PokerEngine.Table` (Raylib) *(planned, [ADR-0004](adr/0004-raylib-scenario-tool-is-a-dev-tool.md))* | — |
+| CFR solving → blueprint; subgame re-solve | `Solver.CfrPlusSolver` *(built; validated on Kuhn)* | Reproducible-approx |
+| Opponent stats, range estimation, leak detection | `PokerEngine.Profiling` *(planned)*; `Decision.OpponentModel` is the v1 stub | Estimate |
+| GTO/heuristic baseline + bounded exploit → action | `Decision.DecisionEngine` *(built, heads-up v1)* | Policy |
+| Settled poker arithmetic (pot odds, MDF, alpha, EV) | `Decision.PokerMath` *(built)* | **Exact** |
+| Solve/benchmark/exploitability/scenarios | `PokerEngine.Cli` *(built: decide/equity/kuhn/demo)* | — |
+| Scenario table | `PokerEngine.Table` (Raylib) *(dev tool, [ADR-0004](adr/0004-raylib-scenario-tool-is-a-dev-tool.md))* | — |
+
+**Honesty on the v1 `Decision` baseline:** it is a *principled heuristic*, not a CFR solve.
+Preflop uses the SAGE push/fold system short-stacked and the Chen score deeper; postflop uses
+equity-vs-pot-odds with MDF/alpha-aware mixing (§11). The CFR machinery is proven separately on
+Kuhn (`Solver`) and will replace these heuristics street by street as the abstraction lands.
 
 ## 1. The decision pipeline
 For a live spot, `Decision.ChooseAction(state, opponentModel, seed)` runs:
@@ -126,9 +135,18 @@ treat the AI column as **labeled experiments** behind a flag, compared head-to-h
 against the deterministic baseline by exploitability and EV, never silently swapped in.
 
 ## 9. Determinism & reproducibility contract
-- A single seeded PRNG (`Core`) drives every stochastic step (MC equity, MCCFR sampling,
-  any mixed-strategy action selection). **Same (state, opponentModel, seed) ⇒ same
-  action and same EV.**
+Two distinct guarantees (see POKER_THEORY §7), often conflated:
+
+- **No AI/ML in the decision path.** Decisions come from explainable poker math (equity, pot
+  odds, CFR, opponent frequencies), never a neural net or LLM. Learned methods are a
+  flag-gated research track (§8), benchmarked against this baseline, never silently swapped in.
+- **Mixing is expected, and that's fine.** Equilibrium poker is *randomized* — the engine
+  deliberately plays "do X p% of the time, Y the rest" (`DecisionEngine` samples from a mixed
+  strategy σ; `DecisionResult.Strategy` reports the whole distribution). This pseudorandom
+  behavior is a feature, required for unexploitability — not a breach of determinism.
+- **Reproducibility ties it together.** A single seeded PRNG (`Core.DeterministicRandom`)
+  drives every stochastic step (MC equity, MCCFR sampling, mixed-strategy selection). **Same
+  (state, opponentModel, seed) ⇒ same action and same EV.**
 - Vanilla CFR/CFR+ are deterministic; MCCFR is deterministic *given the seed*.
 - Mixed strategies (σ assigns probabilities) are reported as the full distribution; when
   a single action must be emitted, it's sampled from σ with the seed, or the doc/flag
@@ -145,3 +163,55 @@ against the deterministic baseline by exploitability and EV, never silently swap
   scripted opponent is beaten for more than GTO would win, and that the blend never
   exceeds `w_max`.
 - **Determinism:** same-seed runs are byte-identical; this is a test, not a hope.
+
+## 11. Baseline policy parameters (v1) and their sources
+The Lead owns these numbers; they are starting points to be tuned against measured
+exploitability/EV, not solved values. Implemented in `Decision.EngineConfig`,
+`Decision.SageSystem`, `Decision.ChenFormula`, `Decision.PokerMath`.
+
+**Settled arithmetic** (exact; `PokerMath`):
+- Pot-odds break-even equity `= toCall / (pot + toCall)`.
+- Minimum Defense Frequency `MDF = pot / (pot + bet)`; bluff/required-fold `alpha = bet / (pot + bet)`;
+  `alpha = 1 − MDF`. (E.g. a pot-sized bet → MDF 50%, alpha 50%; half-pot → MDF 67%, alpha 33%.)
+
+**Preflop, short stack (≤ 10 BB) — SAGE push/fold** (Kittock & Jones, *Card Player* 2006).
+Power Index `= 2·high + low (+22 pair, +2 suited)` with card values 2–10 face, J=11, Q=12,
+K=13, **A=15**. Shove if PI ≥ push threshold; BB calls if PI ≥ call threshold, by whole-BB row:
+
+| eff BB | 1 | 2 | 3 | 4 | 5 | 6 | 7+ |
+|---|---|---|---|---|---|---|---|
+| push ≥ | 17 | 21 | 22 | 23 | 24 | 25 | 26 |
+| call ≥ | any | 17 | 24 | 26 | 28 | 29 | 30 |
+
+This is a deterministic, near-Nash approximation; full chip-EV Nash push/fold tables (and ICM
+adjustment) are a planned refinement — note "SAGE" is *Sit-And-Go Endgame*, distinct from the
+separate Sklansky–Anderson chart.
+
+**Preflop, deeper — Chen score** (Bill Chen). High-card pts A=10/K=8/Q=7/J=6/else rank÷2; pair
+= 2× pts (min 5); +2 suited; gap penalty {0,1,2,4,5}; +1 straight bonus if gap ≤ 1 and high < Q;
+round halves up. Defaults: open if ≥ `OpenChen` (4), call a raise if ≥ `CallRaiseChen` (6),
+3-bet if ≥ `ThreeBetChen` (9).
+
+**Postflop** (heuristic, `DecisionEngine`): equity (vs. a random hand for now — range-vs-range
+is the Profiling upgrade) bucketed against pot odds; value-bet ≥ `ValueBetEquity` (0.62), bluff
+candidates ≤ `BluffCeilingEquity` (0.38) at `BluffFreq` (33%) balanced by alpha, raise for value
+≥ `RaiseEquity` (0.70); facing a bet, call when equity ≥ pot odds, else bluff-catch toward MDF.
+All "p% of the time" choices are seeded mixes (§9).
+
+**Bounded exploitation:** `w = min(w_max, confidence)`, `w_max = MaxExploitWeight` (0.5).
+`σ = (1−w)·σ* + w·σ_exploit`; `w → 0` reproduces the baseline. The v1 lever is the opponent's
+fold-to-bet frequency vs. alpha (over-folder ⇒ bluff more; calling-station ⇒ bluff less).
+
+**Validation milestones / numbers:** CFR+ on Kuhn converges to game value −1/18 with
+exploitability < 0.001 chips/hand (`Solver`); Cepheus solved heads-up *limit* to 0.986 mbb/g
+(Bowling et al., *Science* 2015) — the standard the exploitability metric is measured against.
+
+### Sources
+- SAGE: Kittock & Jones, *Card Player* Vol. 19 No. 2 (2006). Nash push/fold tables:
+  holdemresources.net/hune, primedope.com/equilibrium-pushbot-charts.
+- Chen formula & Sklansky–Malmuth groups: thepokerbank.com; en.wikipedia.org/wiki/Texas_hold_'em_starting_hands.
+- CFR/CFR+ & Kuhn: Neller & Lanctot CFR tutorial (modelai.gettysburg.edu/2013/cfr/cfr.pdf);
+  Burch et al., *Revisiting CFR+ and Alternating Updates* (arXiv:1810.11542); en.wikipedia.org/wiki/Kuhn_poker.
+- Exploitability / Cepheus: Bowling, Burch, Johanson, Tammelin, *Science* 2015;
+  en.wikipedia.org/wiki/Cepheus_(poker_bot).
+- Pot odds / MDF / alpha: blog.gtowizard.com/mdf-alpha; en.wikipedia.org/wiki/Pot_odds.
