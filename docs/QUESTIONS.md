@@ -30,10 +30,21 @@ Format:
   threw for aces), and both `RangeEquity.cs` and the test were UTF-16. Lead fixed the index bug
   (small fix-up), re-encoded `RangeEquity.cs` to UTF-8, and rewrote the test in UTF-8. Two prior
   dispatch attempts failed on a CLI quoting bug, not the worker — see the delegate-local memory.
-- **CLI `leduc` command:** the local worker claimed success but did not actually apply the edit
-  to `Program.cs` (a tooling/restore failure editing the top-level-statements file). The lead
-  wrote the ~12-line command directly rather than re-dispatching to the same worker that couldn't
-  edit it; verified by running it (Leduc exploitability 0.034 chips/hand at 3k iterations).
+- **CLI `leduc` + `pushfold` commands:** the local worker claimed success but did not actually
+  apply the `leduc` edit to `Program.cs` (a tooling/restore failure editing the top-level-statements
+  file). The lead wrote both the `leduc` (~12 lines) and `pushfold` (~40 lines) commands directly
+  rather than re-dispatching to a worker that demonstrably can't edit `Program.cs`. `leduc` verified
+  (exploitability 0.034 chips/hand at 3k iters). `pushfold`'s 169×169 matrix build is slow — see the
+  perf TODO banked below.
+
+## [open] Push/fold matrix build is slow for interactive CLI use
+- Context: `pushfold` builds a 169×169 equity matrix (~28k `RangeEquity` calls), which takes minutes
+  at useful sample counts — fine for the engine/tests (which use a tiny synthetic matrix) but slow as
+  a live CLI demo. Flagged as a cost in ADR-0010.
+- Proceeding with (default): ship the command with a low default sample count + a "this takes a moment"
+  note; treat speed-up as a backlog item (exploit equity symmetry to compute only the upper triangle;
+  cache the matrix to disk; or a faster preflop-equity path).
+- Reversible? yes · ADR: docs/adr/0010
 - **Profiling→Decision wiring:** local worker authored `OpponentModelFactory` + tests cleanly.
   Lead fix-up: sourced `Confidence` from the *same* stat the model reads (the street's fold-to-bet
   / fold-to-cbet) rather than the VPIP-based `profile.Confidence` proxy, so a fold-only sample

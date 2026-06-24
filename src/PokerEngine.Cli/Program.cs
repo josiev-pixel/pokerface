@@ -24,6 +24,7 @@ try
         case "equity": return Equity(opts);
         case "kuhn": return Kuhn(opts);
         case "leduc": return Leduc(opts);
+        case "pushfold": return PushFold(opts);
         case "demo": return Demo();
         case "help" or "-h" or "--help": PrintUsage(); return 0;
         default:
@@ -133,6 +134,45 @@ int Leduc(Dictionary<string, string> o)
     return 0;
 }
 
+int PushFold(Dictionary<string, string> o)
+{
+    int stackBb = Int(o, "stack", 10);
+    int samples = Int(o, "samples", 200);
+    int iters = Int(o, "iters", 3000);
+    var rng = new DeterministicRandom((ulong)Int(o, "seed", 1));
+
+    Console.WriteLine($"Building the 169x169 preflop equity matrix (samples={samples}) — this takes a moment...");
+    var data = PushFoldMatrices.Build(rng, samples);
+    var game = new HoldemPushFold(data.Equity, data.Weight, stackBb); // BigBlind = 1.0, so chips == big blinds
+    var solver = new CfrPlusSolver<PushFoldState>(game);
+    solver.Run(iters);
+    var strat = solver.AverageStrategy();
+    double exploit = BestResponse.Exploitability(game, strat);
+
+    Console.WriteLine($"Heads-up preflop push/fold — {stackBb} BB effective, {iters:N0} CFR+ iterations");
+    Console.WriteLine($"  exploitability: {exploit:0.0000} chips/hand");
+    Console.WriteLine("  SB shove frequency, computed (CFR) vs the SAGE heuristic:");
+    Console.WriteLine("    hand    CFR jam%   SAGE");
+
+    string[] sample = { "AA", "QQ", "TT", "99", "55", "22", "AKs", "AKo", "AQo", "A9o", "A5s", "A2o", "KQo", "KTs", "QJs", "T9s", "98s", "75s", "72o", "32o" };
+    foreach (var text in sample)
+    {
+        var hand = StartingHand.Parse(text);
+        int idx = IndexOfBucket(data.Buckets, hand);
+        double jam = idx >= 0 ? strat[$"S{idx}"][0] : double.NaN;
+        bool sage = SageSystem.ShouldPush(hand, stackBb);
+        Console.WriteLine($"    {text,-6} {jam,8:P0}   {(sage ? "jam" : "fold")}");
+    }
+    return 0;
+}
+
+static int IndexOfBucket(IReadOnlyList<StartingHand> buckets, StartingHand hand)
+{
+    for (int i = 0; i < buckets.Count; i++)
+        if (buckets[i].Equals(hand)) return i;
+    return -1;
+}
+
 int Demo()
 {
     Console.WriteLine("pokerface — scenario demo (deterministic, seed 1)\n");
@@ -216,6 +256,7 @@ USAGE
            [--samples N] [--seed N]
   kuhn     [--iters N]            Solve the Kuhn validation game; show convergence.
   leduc    [--iters N]            Solve Leduc Hold'em; show exploitability.
+  pushfold [--stack BB] [--samples N] [--iters N]   Solve heads-up preflop push/fold; vs SAGE.
   demo                           Run a set of canned scenarios.
   help
 

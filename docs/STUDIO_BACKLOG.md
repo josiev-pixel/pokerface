@@ -66,4 +66,7 @@ checkpoint on the current branch. The Director can reorder anytime (even from th
   abstraction error, real-time budget — try compute / theory / (flagged) AI approaches and
   compare to the deterministic baseline by exploitability + EV.
 - [ ] Performance: profile, then a lookup hand-evaluator / `Span`/SIMD on proven hot paths.
+  Includes the **push/fold 169×169 equity-matrix build** (~28k `RangeEquity` calls): exploit
+  `equity[j,i] ≈ 1 − equity[i,j]` to compute only the upper triangle, and/or cache the matrix
+  to disk so the `pushfold` CLI is interactive (QUESTIONS.md).
 - [ ] Hand-history import to seed long-term opponent profiles.
