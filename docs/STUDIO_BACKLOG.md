@@ -38,9 +38,11 @@ checkpoint on the current branch. The Director can reorder anytime (even from th
 - [x] **Abstraction** (`Abstraction`): equity-bucket card abstraction (`EquityBucketer`),
   a small pot-fraction bet-size set (`BetSizeSet`), and nearest + pseudo-harmonic translation
   (`BetSizeTranslator`) — the named approximation seam (ADR-0007). Tested.
-- [~] **CFR+ solver** (`Solver.CfrPlusSolver`): **done & validated on Kuhn** (converges to the
-  α-family, value −1/18, exploitability < 0.001 chips/hand). Still TODO: Leduc, then heads-up
-  Hold'em on the abstraction, and measuring exploitability there.
+- [~] **CFR+ solver** (`Solver.CfrPlusSolver`): validated on **Kuhn** (α-family, value −1/18,
+  exploitability < 0.001) **and Leduc** (exploitability < 0.1 chips/hand and falling). Reusable
+  info-set-aware **best-response/exploitability** now lives in `Solver.BestResponse` (ADR-0009).
+  Still TODO: heads-up Hold'em on the `Abstraction` (card buckets + bet sizes), and measuring
+  exploitability/translation error there.
 - [ ] **Subgame re-solving** (safe; budget-bounded) to sharpen live decisions.
 - [~] **Profiling** (`Profiling`): **library built + wired** (ADR-0008) — `FrequencyStat`
   (Beta-posterior frequency + sample-size confidence), `OpponentProfile` (VPIP/PFR/3-bet/
