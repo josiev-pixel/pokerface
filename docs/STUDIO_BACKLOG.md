@@ -30,9 +30,9 @@ checkpoint on the current branch. The Director can reorder anytime (even from th
   2,598,960-hand census against known category counts.
 - [x] **Game state + betting engine** (`Core.Game`): 2–9 players, blinds/antes, button,
   streets, legal actions, min-raise/short-all-in reopening, **pot + side pots**, showdown.
-- [x] **Equity / EV** (`Core.Equity.EquityCalculator`): exact enumeration where small, seeded
-  Monte-Carlo where large; vs-specific and vs-random; reproducible by seed.
-  *(range-vs-range with card-removal still TODO — see Profiling.)*
+- [x] **Equity / EV** (`Core.Equity`): `EquityCalculator` (exact enumeration where small, seeded
+  Monte-Carlo where large; vs-specific and vs-random) **and** `RangeEquity` + `RangeBuilder`
+  (range-vs-range with card removal / blockers; 169-bucket expansion). Reproducible by seed.
 
 ## Next  (the decision engine — heads-up)
 - [x] **Abstraction** (`Abstraction`): equity-bucket card abstraction (`EquityBucketer`),

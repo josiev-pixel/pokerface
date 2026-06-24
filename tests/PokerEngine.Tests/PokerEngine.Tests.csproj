@@ -45,6 +45,7 @@
     <Compile Include="..\Decision\**\*.cs" />
     <Compile Include="..\Abstraction\**\*.cs" />
     <Compile Include="..\Profiling\**\*.cs" />
+    <Compile Include="..\Equity\**\*.cs" />
   </ItemGroup>
 
 </Project>
