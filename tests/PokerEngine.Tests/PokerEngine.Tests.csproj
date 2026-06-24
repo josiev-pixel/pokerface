@@ -39,10 +39,12 @@
     <Compile Include="..\..\src\PokerEngine.Decision\**\*.cs" Exclude="..\..\src\PokerEngine.Decision\obj\**\*.cs;..\..\src\PokerEngine.Decision\bin\**\*.cs" />
     <Compile Include="..\..\src\PokerEngine.Solver\**\*.cs" Exclude="..\..\src\PokerEngine.Solver\obj\**\*.cs;..\..\src\PokerEngine.Solver\bin\**\*.cs" />
     <Compile Include="..\..\src\PokerEngine.Abstraction\**\*.cs" Exclude="..\..\src\PokerEngine.Abstraction\obj\**\*.cs;..\..\src\PokerEngine.Abstraction\bin\**\*.cs" />
+    <Compile Include="..\..\src\PokerEngine.Profiling\**\*.cs" Exclude="..\..\src\PokerEngine.Profiling\obj\**\*.cs;..\..\src\PokerEngine.Profiling\bin\**\*.cs" />
     <Compile Include="..\Game\**\*.cs" />
     <Compile Include="..\Solver\**\*.cs" />
     <Compile Include="..\Decision\**\*.cs" />
     <Compile Include="..\Abstraction\**\*.cs" />
+    <Compile Include="..\Profiling\**\*.cs" />
   </ItemGroup>
 
 </Project>

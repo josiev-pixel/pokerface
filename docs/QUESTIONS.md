@@ -21,3 +21,7 @@ Format:
   (the bulk of the new code) but did not produce `tests/Abstraction/AbstractionTests.cs`. The
   lead wrote that test file directly as a small fix-up rather than re-dispatching, to keep the
   cycle moving; the library itself was worker-authored and lead-reviewed. (ADR-0007.)
+- **Profiling cycle:** the local worker authored the `PokerEngine.Profiling` library (worker
+  code, lead-reviewed) and its tests, but wrote the test file as UTF-16 and had one broken
+  assertion (`Confidence() > Confidence(20.0)` — identical values). The lead rewrote
+  `tests/Profiling/ProfilingTests.cs` in UTF-8 with corrected assertions as a fix-up. (ADR-0008.)

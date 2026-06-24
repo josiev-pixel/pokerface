@@ -42,9 +42,11 @@ checkpoint on the current branch. The Director can reorder anytime (even from th
   α-family, value −1/18, exploitability < 0.001 chips/hand). Still TODO: Leduc, then heads-up
   Hold'em on the abstraction, and measuring exploitability there.
 - [ ] **Subgame re-solving** (safe; budget-bounded) to sharpen live decisions.
-- [~] **Profiling** (`Profiling`): opponent stats at hand/recent/lifetime horizons; Bayesian
-  range estimate; read-confidence `c`. *(Only the `Decision.OpponentModel` stub + read
-  confidence exists today; the real three-horizon profiler is TODO.)*
+- [~] **Profiling** (`Profiling`): **library built** (ADR-0008) — `FrequencyStat` (Beta-posterior
+  frequency + sample-size confidence) and `OpponentProfile` (VPIP/PFR/3-bet/fold-to-cbet/
+  fold-to-bet-by-street, aggression frequency, leak detection). Tested. **TODO:** wire it into
+  `Decision` (derive `OpponentModel` per spot from the profile) and add Bayesian *range* estimation
+  beyond scalar frequencies + the recent-window decay.
 - [x] **Decision policy** (`Decision.DecisionEngine`, heads-up v1): baseline (SAGE/Chen preflop,
   equity-vs-pot-odds postflop with seeded mixing) + bounded exploit blend (`w=f(c)`, capped
   `w_max`); emits action + EV/equity/strategy/why. Tested: `w→0` ⇒ baseline, over-folder gets
