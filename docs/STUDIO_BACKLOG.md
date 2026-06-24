@@ -40,9 +40,11 @@ checkpoint on the current branch. The Director can reorder anytime (even from th
   (`BetSizeTranslator`) — the named approximation seam (ADR-0007). Tested.
 - [~] **CFR+ solver** (`Solver.CfrPlusSolver`): validated on **Kuhn** (α-family, value −1/18,
   exploitability < 0.001) **and Leduc** (exploitability < 0.1 chips/hand and falling). Reusable
-  info-set-aware **best-response/exploitability** now lives in `Solver.BestResponse` (ADR-0009).
-  Still TODO: heads-up Hold'em on the `Abstraction` (card buckets + bet sizes), and measuring
-  exploitability/translation error there.
+  info-set-aware **best-response/exploitability** in `Solver.BestResponse` (ADR-0009). **First
+  real-Hold'em solve done:** heads-up **preflop push/fold** on the 169 buckets — `Solver.HoldemPushFold`
+  + `Core.Equity.PushFoldMatrices` (169×169 equity + blocker-aware deal weights), exploitability ~0
+  (ADR-0010). Still TODO: a **CLI `pushfold`** command (print the solved jam/call ranges vs SAGE),
+  then **multi-street** (flop + a `BetSizeSet`) and measuring translation error.
 - [ ] **Subgame re-solving** (safe; budget-bounded) to sharpen live decisions.
 - [~] **Profiling** (`Profiling`): **library built + wired** (ADR-0008) — `FrequencyStat`
   (Beta-posterior frequency + sample-size confidence), `OpponentProfile` (VPIP/PFR/3-bet/
