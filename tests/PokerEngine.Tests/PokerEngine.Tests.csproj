@@ -1,25 +1,37 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    xUnit v3 + Microsoft.Testing.Platform: the test project builds to a console executable
+    and runs itself, instead of being loaded by the legacy vstest reflection host (which is
+    blocked by Windows Smart App Control on this machine).
+
+    Smart App Control also blocks unsigned engine DLLs when xUnit loads them through its own
+    AssemblyLoadContext. To avoid that load entirely we COMPILE the engine sources directly
+    into the test assembly (which the default loader has already admitted) rather than taking
+    a ProjectReference. See docs/DEVELOPMENT.md for the full story.
+  -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- Engine sources compiled in-assembly (see header). -->
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PokerEngine.Core\PokerEngine.Core.csproj" />
+    <Compile Include="..\..\src\PokerEngine.Core\**\*.cs" Exclude="..\..\src\PokerEngine.Core\obj\**\*.cs;..\..\src\PokerEngine.Core\bin\**\*.cs" />
   </ItemGroup>
 
 </Project>
