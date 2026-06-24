@@ -1,18 +1,31 @@
 # pokerface
 
-A poker game. *(First test project for the local-first AI workflow.)*
+A **No-Limit Texas Hold'em decision engine** — game-theoretically strong play that also
+**profiles and exploits** opponents, leaning **deterministic and explainable**. Up to 9
+players; **heads-up first** (the solvable case). Plus a basic **Raylib scenario tool** to
+set up spots (drag the 52 cards into place, set pot/bets/action/button) and ask the engine
+what it would do.
 
-Status: **scaffold** — stack and scope not yet chosen. Define them in the first
-work session (e.g. `..\orchestrate.ps1 -Project pokerface` or
-`..\local.ps1 -C .\`).
+The decision-making is documented in two companion docs — read these first:
+- **[docs/POKER_THEORY.md](docs/POKER_THEORY.md)** — the theory, in plain language.
+- **[docs/DECISION_ALGORITHM.md](docs/DECISION_ALGORITHM.md)** — the technical algorithm,
+  mapped to the code.
+
+See also [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and the [decision records](docs/adr/).
+
+## Build & test
+Needs the **.NET 10 SDK**.
+```
+dotnet build       # build PokerEngine.slnx
+dotnet test        # xUnit, headless
+```
 
 ## Layout
-- `src/` — game code
-- `assets/` — cards, sprites, sounds
-- `tests/` — unit/integration tests
-- `docs/` — [architecture writeup](docs/ARCHITECTURE.md) + [decision records](docs/adr/)
+- `src/PokerEngine.*` — engine (Core, Abstraction, Solver, Profiling, Decision, Cli) + the
+  Raylib `Table` scenario tool.
+- `tests/` — xUnit.
+- `docs/` — theory + algorithm + architecture + ADRs.
 
 ## Workflow
-This project inherits the workspace's local-first workflow (`..\AGENTS.md`):
-local Qwen does most of the work, escalating to Codex-cloud / Claude only when a
-task calls for it. See `..\README.md`.
+Claude-cloud leads and delegates routine work to local Qwen / codex-cloud (see
+[`AGENTS.md`](AGENTS.md)). Studio-capable: `..\studio.ps1 -Project pokerface`.

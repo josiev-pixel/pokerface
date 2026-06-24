@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "_comment": "Project-level policy. The parent ../.claude/settings.json is NOT inherited when pokerface is the project root, so the studio keep-alive hook, autoMode, and permissions must all live HERE or studio mode stops after every turn. Mirrors basketballer/.claude/settings.json.",
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash",
+      "PowerShell",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*credential*)",
+      "Read(**/*secret*)",
+      "Read(**/id_rsa*)",
+      "Read(**/auth.json)",
+      "Read(**/.credentials.json)",
+      "Read(**/.aws/**)",
+      "Read(**/.ssh/**)",
+      "Bash(cat *.env*)",
+      "Bash(cat *credential*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/*)",
+      "Bash(rm -rf .)",
+      "Bash(:(){ :|:& };:)",
+      "PowerShell(Get-Content *.env*)",
+      "PowerShell(Format-Volume*)",
+      "PowerShell(Remove-Item -Recurse -Force C:\\*)",
+      "PowerShell(Remove-Item -Recurse -Force ~*)",
+      "PowerShell(Remove-Item -Recurse -Force \\*)"
+    ]
+  },
+
+  "//": "Auto mode (studio.ps1 via --permission-mode auto): no prompts for normal work, hard-deny the dangerous stuff so unattended runs never stall AND can't do damage.",
+  "skipAutoPermissionPrompt": true,
+  "autoMode": {
+    "hard_deny": [
+      "$defaults",
+      "Reading, printing, or transmitting secrets: .env files, *.pem / *.key, credentials, API keys, auth tokens, ~/.ssh, ~/.aws, auth.json, .credentials.json",
+      "Sending any secret, credential, or proprietary data to a cloud model",
+      "Destructive filesystem operations outside the current project (rm -rf of home/root, Format-Volume, recursive force-delete of a drive)",
+      "git push --force, history rewrites (rebase/reset --hard on shared history), deleting the .git directory, or pushing to any remote",
+      "Installing system-wide software or changing system/security settings"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Deleting files the studio did not itself create",
+      "Network calls to domains other than package registries, the local LM Studio endpoint, and documentation sites"
+    ]
+  },
+
+  "//hooks": "Studio keep-alive: when STUDIO_DIR is set (studio.ps1), this gate keeps the session working the backlog instead of stopping. No-op for every other session (the gate exits early when STUDIO_DIR is unset).",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\users\\josie\\projects\\.studio\\stop-gate.ps1\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
