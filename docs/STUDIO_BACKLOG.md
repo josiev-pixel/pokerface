@@ -49,8 +49,10 @@ checkpoint on the current branch. The Director can reorder anytime (even from th
 - [~] **Profiling** (`Profiling`): **library built + wired** (ADR-0008) — `FrequencyStat`
   (Beta-posterior frequency + sample-size confidence), `OpponentProfile` (VPIP/PFR/3-bet/
   fold-to-cbet/fold-to-bet-by-street, aggression, leak detection), and `Decision.OpponentModelFactory`
-  that derives the exploit `OpponentModel` from a profile + street. Tested. **TODO:** Bayesian
-  *range* estimation beyond scalar frequencies, and the recent-window decay (three-horizon).
+  that derives the exploit `OpponentModel` from a profile + street. `DecayingFrequencyStat`
+  (exponential recent-window decay) is built + tested. Tested. **TODO:** add a "recent" horizon to
+  `OpponentProfile` using `DecayingFrequencyStat`, and Bayesian *range* estimation beyond scalar
+  frequencies.
 - [x] **Decision policy** (`Decision.DecisionEngine`, heads-up v1): baseline (SAGE/Chen preflop,
   equity-vs-pot-odds postflop with seeded mixing) + bounded exploit blend (`w=f(c)`, capped
   `w_max`); emits action + EV/equity/strategy/why. Tested: `w→0` ⇒ baseline, over-folder gets

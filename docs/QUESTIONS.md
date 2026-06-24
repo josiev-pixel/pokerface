@@ -45,6 +45,10 @@ Format:
   note; treat speed-up as a backlog item (exploit equity symmetry to compute only the upper triangle;
   cache the matrix to disk; or a faster preflop-equity path).
 - Reversible? yes · ADR: docs/adr/0010
+- **Decay stat cycle:** local worker authored `DecayingFrequencyStat` + tests cleanly (UTF-8 BOM,
+  lead stripped). One recency test asserted `> 0.6` — but that came from a wrong threshold in the
+  lead's spec (the correct value is ~0.5); lead rewrote it as a robust decayed-vs-long-memory
+  comparison. Second time a spec number was off (cf. the AA combo count) — the engine was right.
 - **Profiling→Decision wiring:** local worker authored `OpponentModelFactory` + tests cleanly.
   Lead fix-up: sourced `Confidence` from the *same* stat the model reads (the street's fold-to-bet
   / fold-to-cbet) rather than the VPIP-based `profile.Confidence` proxy, so a fold-only sample
