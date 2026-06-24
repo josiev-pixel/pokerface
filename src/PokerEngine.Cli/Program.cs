@@ -23,6 +23,7 @@ try
         case "decide": return Decide(opts);
         case "equity": return Equity(opts);
         case "kuhn": return Kuhn(opts);
+        case "leduc": return Leduc(opts);
         case "demo": return Demo();
         case "help" or "-h" or "--help": PrintUsage(); return 0;
         default:
@@ -115,6 +116,23 @@ int Kuhn(Dictionary<string, string> o)
     return 0;
 }
 
+int Leduc(Dictionary<string, string> o)
+{
+    int iters = Int(o, "iters", 5000);
+    var game = new LeducPoker();
+    var solver = new CfrPlusSolver<LeducState>(game);
+    solver.Run(iters);
+    var strat = solver.AverageStrategy();
+    double exploit = BestResponse.Exploitability(game, strat);
+    double mbb = BestResponse.ExploitabilityMilliBigBlinds(game, strat, 1.0);
+
+    Console.WriteLine($"CFR+ on Leduc Hold'em — {iters:N0} iterations");
+    Console.WriteLine($"  info sets solved: {strat.Count}");
+    Console.WriteLine($"  exploitability:   {exploit:0.0000} chips/hand");
+    Console.WriteLine($"  exploitability:   {mbb:0.0} mbb/hand");
+    return 0;
+}
+
 int Demo()
 {
     Console.WriteLine("pokerface — scenario demo (deterministic, seed 1)\n");
@@ -196,7 +214,8 @@ USAGE
            [--eff N] [--bb N] [--seed N] [--foldtobet 0..1 --confidence 0..1]
   equity   --hero AhAs [--villain KhKs | (vs a random hand)] [--board "..."]
            [--samples N] [--seed N]
-  kuhn     [--iters N]            Solve the CFR validation game; show convergence.
+  kuhn     [--iters N]            Solve the Kuhn validation game; show convergence.
+  leduc    [--iters N]            Solve Leduc Hold'em; show exploitability.
   demo                           Run a set of canned scenarios.
   help
 

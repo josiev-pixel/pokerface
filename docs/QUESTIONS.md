@@ -30,6 +30,10 @@ Format:
   threw for aces), and both `RangeEquity.cs` and the test were UTF-16. Lead fixed the index bug
   (small fix-up), re-encoded `RangeEquity.cs` to UTF-8, and rewrote the test in UTF-8. Two prior
   dispatch attempts failed on a CLI quoting bug, not the worker — see the delegate-local memory.
+- **CLI `leduc` command:** the local worker claimed success but did not actually apply the edit
+  to `Program.cs` (a tooling/restore failure editing the top-level-statements file). The lead
+  wrote the ~12-line command directly rather than re-dispatching to the same worker that couldn't
+  edit it; verified by running it (Leduc exploitability 0.034 chips/hand at 3k iterations).
 - **Profiling→Decision wiring:** local worker authored `OpponentModelFactory` + tests cleanly.
   Lead fix-up: sourced `Confidence` from the *same* stat the model reads (the street's fold-to-bet
   / fold-to-cbet) rather than the VPIP-based `profile.Confidence` proxy, so a fold-only sample
