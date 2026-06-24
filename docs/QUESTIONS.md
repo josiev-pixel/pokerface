@@ -15,3 +15,9 @@ Format:
 ```
 
 ---
+
+## Worklog / accountability
+- **Abstraction cycle:** the local worker implemented the `PokerEngine.Abstraction` library
+  (the bulk of the new code) but did not produce `tests/Abstraction/AbstractionTests.cs`. The
+  lead wrote that test file directly as a small fix-up rather than re-dispatching, to keep the
+  cycle moving; the library itself was worker-authored and lead-reviewed. (ADR-0007.)

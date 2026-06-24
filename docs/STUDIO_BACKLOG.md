@@ -35,8 +35,9 @@ checkpoint on the current branch. The Director can reorder anytime (even from th
   *(range-vs-range with card-removal still TODO — see Profiling.)*
 
 ## Next  (the decision engine — heads-up)
-- [ ] **Abstraction** (`Abstraction`): coarse card buckets + a small bet-size set +
-  translation. Document the error as the named approximation seam.
+- [x] **Abstraction** (`Abstraction`): equity-bucket card abstraction (`EquityBucketer`),
+  a small pot-fraction bet-size set (`BetSizeSet`), and nearest + pseudo-harmonic translation
+  (`BetSizeTranslator`) — the named approximation seam (ADR-0007). Tested.
 - [~] **CFR+ solver** (`Solver.CfrPlusSolver`): **done & validated on Kuhn** (converges to the
   α-family, value −1/18, exploitability < 0.001 chips/hand). Still TODO: Leduc, then heads-up
   Hold'em on the abstraction, and measuring exploitability there.
