@@ -1,6 +1,9 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/PokerEngine.Core/PokerEngine.Core.csproj" />
+    <Project Path="src/PokerEngine.Decision/PokerEngine.Decision.csproj" />
+    <Project Path="src/PokerEngine.Solver/PokerEngine.Solver.csproj" />
+    <Project Path="src/PokerEngine.Cli/PokerEngine.Cli.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PokerEngine.Tests/PokerEngine.Tests.csproj" />

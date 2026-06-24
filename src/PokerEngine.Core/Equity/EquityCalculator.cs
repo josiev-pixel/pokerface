@@ -65,6 +65,60 @@ namespace PokerEngine.Core.Equity
             return MonteCarlo(hero, villain, fixedBoard, deck, need, rng, samples);
         }
 
+        /// <summary>
+        /// Equity of <paramref name="hero"/> against a single uniformly-random opponent holding,
+        /// on the given board, by seeded Monte-Carlo (sampling both the villain's hole cards and
+        /// the remaining board). This is the classic "hand vs. a random hand" strength signal —
+        /// a coarse but useful proxy until a real opponent range is supplied (Profiling layer).
+        /// </summary>
+        public static EquityResult HeadsUpVsRandom(
+            IReadOnlyList<Card> hero,
+            IReadOnlyList<Card> board,
+            DeterministicRandom rng,
+            int samples = DefaultSamples)
+        {
+            if (hero is null || hero.Count != 2) throw new ArgumentException("Hero needs exactly two hole cards.", nameof(hero));
+            if (board is null || board.Count > 5) throw new ArgumentException("Board has 0–5 cards.", nameof(board));
+            if (samples <= 0) throw new ArgumentOutOfRangeException(nameof(samples));
+
+            ulong used = 0;
+            foreach (var c in hero) used |= 1UL << c.Index;
+            foreach (var c in board) used |= 1UL << c.Index;
+
+            var deck = new List<Card>(52);
+            for (int i = 0; i < 52; i++)
+                if ((used & (1UL << i)) == 0) deck.Add(Card.FromIndex(i));
+
+            int needBoard = 5 - board.Count;
+            var pool = deck.ToArray();
+            var villain = new Card[2];
+            var runout = new Card[needBoard];
+            var fixedBoard = new List<Card>(board);
+            long win = 0, tie = 0, loss = 0;
+
+            for (int s = 0; s < samples; s++)
+            {
+                // Draw 2 villain cards + the board runout as distinct cards from the pool.
+                int draw = 2 + needBoard;
+                for (int k = 0; k < draw; k++)
+                {
+                    int j = k + rng.NextInt(0, pool.Length - k);
+                    (pool[k], pool[j]) = (pool[j], pool[k]);
+                }
+                villain[0] = pool[0];
+                villain[1] = pool[1];
+                for (int k = 0; k < needBoard; k++) runout[k] = pool[2 + k];
+
+                var h = Best(hero, fixedBoard, runout);
+                var v = Best(villain, fixedBoard, runout);
+                int cmp = h.CompareTo(v);
+                if (cmp > 0) win++; else if (cmp < 0) loss++; else tie++;
+            }
+
+            double inv = 1.0 / samples;
+            return new EquityResult(win * inv, tie * inv, loss * inv, samples) { IsExact = false };
+        }
+
         private static EquityResult Enumerate(
             IReadOnlyList<Card> hero, IReadOnlyList<Card> villain,
             List<Card> board, List<Card> deck, int need)

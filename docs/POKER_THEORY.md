@@ -126,19 +126,32 @@ decision-making** (learned strategies / value networks). We **lean toward the fi
 — deterministic, explainable, reproducible — and treat AI/learning as an *optional
 experiment* for the frontier cases, never the unexamined default (see §7).
 
-## 7. Why we lean deterministic
-A **deterministic** engine means: the same situation, the same opponent model, and the
-same random seed always produce the same decision — and we can *explain why*. We prefer:
-- **computed equilibrium strategies** (from the CFR algorithm) you can inspect and
-  measure, over
-- **black-box neural agents** that may play well but can't tell you *why* and aren't
-  reproducible or auditable.
+## 7. Why we lean deterministic (and what "deterministic" does *not* mean)
+Two different ideas often get bundled under "deterministic." We mean both, but they are
+worth separating because they pull in different directions:
 
-This makes the engine **testable, debuggable, and trustworthy** — you can ask it "why
-this fold?" and get pot odds, range, equity, and the exploit adjustment, not a shrug.
-Where we do use randomness (Monte-Carlo equity, sampled solving) it is **seeded**, so
-runs reproduce exactly. AI/learning stays a clearly-labeled research track for the
-problems theory can't yet reach (§6), not the foundation.
+**(a) No AI/ML in the decision path.** The engine decides using *explainable poker math* —
+equity, pot odds, the CFR algorithm, opponent frequencies — **not** a neural network or a
+language model. This is the load-bearing rule: you can always ask "why this fold?" and get
+pot odds, range, equity, and the exploit adjustment, not a shrug from a black box. Neural /
+learned methods stay a clearly-labeled, flag-gated *research track* for the frontier problems
+theory can't yet reach (§6), compared head-to-head against the math baseline — never silently
+in the decision path. (If a genuinely compelling case for a learned component ever appears,
+it's a conversation to have explicitly, not a default.)
+
+**(b) Reproducibility — but poker is a game of mixing, so randomness is expected.** Correct
+poker is *not* a deterministic function from cards to one action. Equilibrium play is
+**mixed**: with a given hand you might bet 70% of the time and check 30%, precisely so the
+opponent can't read you. The engine therefore **does** use pseudorandom behavior ("do X this
+fraction of the time, Y the rest") — that's a feature, not a violation. What we require is
+that this randomness be **seeded**, so the same situation + opponent model + **seed** always
+reproduces the same action and the same numbers, and the whole *distribution* is reported
+alongside the sampled choice. Same with Monte-Carlo equity and any sampled solving: seeded,
+hence reproducible.
+
+So the contract is: **explainable math, not AI** (a), implemented so that **every run is
+reproducible from its seed even though the strategy itself is deliberately randomized** (b).
+That combination is what makes the engine testable, debuggable, and trustworthy.
 
 ## 8. Glossary
 - **EV (Expected Value):** average profit of an action over all unknown outcomes.

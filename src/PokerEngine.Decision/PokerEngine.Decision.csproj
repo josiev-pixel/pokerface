@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The decision policy: GTO/heuristic baseline + bounded opponent exploitation, producing an
+    explainable action. Deterministic; the only randomness is seeded mixed-strategy sampling
+    (the engine deliberately uses NO AI/ML in the decision path — see docs/DECISION_ALGORITHM §0).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PokerEngine.Core\PokerEngine.Core.csproj" />
+  </ItemGroup>
+
+</Project>
