@@ -16,6 +16,25 @@ Format:
 
 ---
 
+## [open] Studio run checkpoint — 2026-06-23 (paused to protect the weekly Claude budget)
+- **State:** strong, comprehensive milestone. ~13 commits this run, **170 tests green**, full engine
+  validated end-to-end through the first real-Hold'em CFR solve (heads-up preflop push/fold:
+  0.0088 chips/hand exploitability, ranges matching SAGE/theory). All layers built + documented:
+  Core (eval, equity, range-equity, betting+side-pots), Abstraction, Solver (CFR+ on Kuhn/Leduc +
+  push/fold, reusable best-response/exploitability), Profiling (wired into Decision; decay stat
+  built), Decision (heads-up policy), Cli (decide/equity/kuhn/leduc/pushfold/demo), Table viewer.
+- **Why paused here:** remaining backlog is large, multi-cycle, research-grade work (multi-street
+  abstracted solve, subgame re-solving, Bayesian range estimation, multiway/ICM, the matrix-build
+  perf optimization) — better tackled fresh with Director input on priorities than by burning the
+  scarce weekly Claude budget at the tail of a long autonomous stretch.
+- **Recurring worker limitation (worth the Director's attention):** local Qwen reliably writes NEW
+  files but repeatedly fails to EDIT existing files (it silently no-op'd the `Program.cs` leduc edit,
+  and stalled on the `OpponentProfile.cs` recent-horizon edit). For in-place edits, prefer codex-cloud
+  or the lead. The recent-horizon wiring (`DecayingFrequencyStat` → `OpponentProfile`) is the clean
+  next pickup — its spec is in the scratchpad; redo it via codex-cloud or hand-write it.
+- **To resume:** `..\studio.ps1 -Project pokerface`; next item is the recent-horizon wiring, then the
+  multi-street abstracted solve (extend ADR-0010's push/fold to a flop + `BetSizeSet`).
+
 ## Worklog / accountability
 - **Abstraction cycle:** the local worker implemented the `PokerEngine.Abstraction` library
   (the bulk of the new code) but did not produce `tests/Abstraction/AbstractionTests.cs`. The
