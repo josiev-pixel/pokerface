@@ -30,3 +30,7 @@ Format:
   threw for aces), and both `RangeEquity.cs` and the test were UTF-16. Lead fixed the index bug
   (small fix-up), re-encoded `RangeEquity.cs` to UTF-8, and rewrote the test in UTF-8. Two prior
   dispatch attempts failed on a CLI quoting bug, not the worker — see the delegate-local memory.
+- **Profiling→Decision wiring:** local worker authored `OpponentModelFactory` + tests cleanly.
+  Lead fix-up: sourced `Confidence` from the *same* stat the model reads (the street's fold-to-bet
+  / fold-to-cbet) rather than the VPIP-based `profile.Confidence` proxy, so a fold-only sample
+  still yields confidence > 0 (a genuine design call on which read drives the exploit weight).

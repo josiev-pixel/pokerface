@@ -17,6 +17,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PokerEngine.Core\PokerEngine.Core.csproj" />
+    <ProjectReference Include="..\PokerEngine.Profiling\PokerEngine.Profiling.csproj" />
   </ItemGroup>
 
 </Project>
+
